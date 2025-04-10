@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cotações Diárias: BRL, ARS, V‑Bucks e Robux</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    .card {
+      background: #fff;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      display: block;
+      margin: 1rem auto;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cotações Diárias</h1>
+  <div class="card">
+    <h2>BRL para Peso Argentino (ARS)</h2>
+    <p id="arsValue">Carregando...</p>
+  </div>
+  <div class="card">
+    <h2>BRL para V‑Bucks</h2>
+    <p id="vbucksValue">Carregando...</p>
+  </div>
+  <div class="card">
+    <h2>BRL para Robux</h2>
+    <p id="robuxValue">Carregando...</p>
+  </div>
+  <button id="refresh">Atualizar cotações</button>
+
+  <script>
+    async function atualizarCotacoes() {
+      const arsEl = document.getElementById('arsValue');
+      const vbucksEl = document.getElementById('vbucksValue');
+      const robuxEl = document.getElementById('robuxValue');
+
+      try {
+        // Obtém as taxas de câmbio USD e ARS com base no BRL
+        const response = await fetch("https://api.exchangerate.host/latest?base=BRL&symbols=USD,ARS");
+        if (!response.ok) throw new Error("Erro ao buscar os dados.");
+        const data = await response.json();
+        // Exemplo de retorno:
+        // { base: "BRL", date: "2025-04-09", rates: { USD: 0.20, ARS: 4.00 } }
+        
+        const taxaUSD = data.rates.USD;
+        const taxaARS = data.rates.ARS;
+        
+        // Atualiza a exibição para ARS (quanto 1 BRL vale em ARS)
+        arsEl.textContent = `1 Real = ${taxaARS.toFixed(2)} Pesos Argentinos`;
+        
+        // Cálculo para V‑Bucks:
+        // Considerando 1 V‑Buck = US$0,01, então
+        // 1 BRL compra: (taxaUSD / 0.01) = 100 * taxaUSD V‑Bucks.
+        const vbucks = 100 * taxaUSD;
+        vbucksEl.textContent = `1 Real compra aproximadamente ${vbucks.toFixed(2)} V‑Bucks`;
+
+        // Cálculo para Robux:
+        // Considerando 1 Robux = US$0,0125, então
+        // 1 BRL compra: (taxaUSD / 0.0125) = 80 * taxaUSD Robux.
+        const robux = 80 * taxaUSD;
+        robuxEl.textContent = `1 Real compra aproximadamente ${robux.toFixed(2)} Robux`;
+
+      } catch (error) {
+        console.error(error);
+        arsEl.textContent = "Erro ao carregar a cotação.";
+        vbucksEl.textContent = "Erro ao carregar a cotação.";
+        robuxEl.textContent = "Erro ao carregar a cotação.";
+      }
+    }
+
+    // Atualiza ao carregar a página
+    atualizarCotacoes();
+
+    // Atualiza quando o usuário clicar no botão
+    document.getElementById('refresh').addEventListener('click', atualizarCotacoes);
+  </script>
+</body>
+</html>
